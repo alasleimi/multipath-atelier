@@ -26,9 +26,15 @@ Controls
   Selecting a reference or candidate shows an inline numerical summary;
   "Inspect numbers" moves to the full calculation. On the SAPP map, Tab to
   a cell and use the arrow keys to inspect adjacent positions.
-  SAPP's source-visibility frame shows expected echo counts before query
-  survival, with a labeled cell readout and room-wide range. Compare sources
+  SAPP's source-visibility frame shows expected echo counts before allowing
+  for missed query echoes, with a labeled cell readout and room-wide range. Compare sources
   directly above the map; Low count / High count select the actual extrema.
+  SAPP's responsibility frame lets you select a survey, peak and training pass.
+  Its fractions sum to one; column totals give the source counts. All four
+  count updates run in the browser and match the stored Python fit outputs.
+  Every SAPP equation has a symbol glossary directly underneath it. The method
+  map below the walkthrough (also available from the top link) connects survey
+  training to positioning; select a card to jump to the corresponding step.
   Edit MPUrge path lists, or change receiver position, perturbation, missing
   paths and clutter in the positioning lessons. Each change reruns the model.
   "Export this run" downloads inputs, step data and numerical outputs as JSON.

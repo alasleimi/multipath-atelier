@@ -31,4 +31,12 @@ assert.equal(E.mapLocalize([],refs).estimate,null);
 assert.ok(E.sapp([],data).weights.every(Number.isFinite));
 const r=E.match([2.1,3.4,5.8,6.2,10.3,13.6],[2.4,3.2,5.5,8.9,10.6,13.2,18.4]);
 assert.ok(r.trace.some(s=>s.active?.rejected));assert.ok(r.trace.some(s=>s.round===2));
-console.log(`PASS: 60 Python association cases, SAPP Python likelihood fixtures, kernel normalization, solver objective, median, permutation and edge checks (${assertions} numeric comparisons).`);
+const training = E.trainingResponsibilities(data);
+training.passes.forEach(pass => pass.rows.forEach(row => {
+  row.peaks.forEach(peak => near(E.sum(peak.shares), 1));
+  near(E.sum(row.counts), row.peaks.length);
+}));
+training.passes.at(-1).rows.forEach((row,i) => data.model.softCounts[i].forEach((count,j) => near(row.counts[j],count)));
+training.globalCounts.forEach((count,j) => near(count,data.model.globalCounts[j]));
+near(training.clutter,data.model.clutterRate);
+console.log(`PASS: 60 Python association cases, SAPP Python likelihood and training counts, kernel normalization, solver objective, median, permutation and edge checks (${assertions} numeric comparisons).`);

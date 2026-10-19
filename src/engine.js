@@ -131,6 +131,30 @@
     const norm = Math.max(studentCDF((limit - location) / s) - studentCDF(-location / s), 1e-15);
     return (2 / (Math.PI * Math.sqrt(3) * s)) / ((1 + z * z / 3) ** 2) / norm;
   }
+  // Replay fitting.py's four count updates with the retained, precomputed sources.
+  function trainingResponsibilities(data) {
+    const { model, survey, sets } = data, p = model.parameters, limit = p.range_limit_m;
+    let globalCounts = model.anchors.map(() => .35), clutter = 1;
+    const passes = [];
+    for (let iteration = 0; iteration < 4; iteration++) {
+      const rows = survey.map((point, i) => {
+        const ranges = model.anchors.map(a => dist(point, a));
+        const peaks = sets[i].map(d => {
+          const kernels = ranges.map(r => density(d, r, p.association_scale_m, limit));
+          const strengths = kernels.map((k, j) => k * globalCounts[j]);
+          const unexplained = clutter / limit, total = sum(strengths) + unexplained;
+          return { d, kernels, strengths: [...strengths, unexplained], total,
+            shares: [...strengths, unexplained].map(v => v / Math.max(total, 1e-15)) };
+        });
+        const counts = Array.from({length: model.anchors.length + 1}, (_, j) => sum(peaks.map(v => v.shares[j])));
+        return { ranges, peaks, counts };
+      });
+      passes.push({ globalCounts: [...globalCounts], clutter, rows });
+      globalCounts = model.anchors.map((_, j) => clamp((sum(rows.map(r => r.counts[j])) + .25) / (survey.length + .5), p.intensity_floor, p.intensity_ceiling));
+      clutter = clamp((sum(rows.map(r => r.counts.at(-1))) + .5) / (survey.length + .5), .05, 6);
+    }
+    return { passes, globalCounts, clutter };
+  }
   function features(point, data, scale = .18) {
     const { model, survey } = data, h = model.parameters.field_length_m;
     const spatial = survey.map(p => Math.exp(-(dist(p, point) ** 2) / (2 * h * h)));
@@ -195,7 +219,7 @@
     for (let i = 0; i < clutter; i++) q.push(9.3 + 6.9 * i);
     return q.sort((a, b) => a - b);
   }
-  const api = { sum, mean, dist, clamp, argmin, match, mapLocalize, leastSquares, smart, density, features, scorePoint, geometricMedian, sapp, observations };
+  const api = { sum, mean, dist, clamp, argmin, match, mapLocalize, leastSquares, smart, density, trainingResponsibilities, features, scorePoint, geometricMedian, sapp, observations };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.LabEngine = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

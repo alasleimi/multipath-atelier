@@ -23,15 +23,17 @@
 <main id="main">
   <header class="topbar"><span>THE LOCALIZATION LAB <span class="slash">/</span> <span id="breadcrumb">Path association</span></span><button id="export" class="text-button">Export this run <span aria-hidden="true">↗</span></button></header>
   <section class="intro"><div><div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1><p id="subtitle"></p></div><div class="chapter-index" id="chapterIndex" aria-hidden="true"></div></section>
-  <div class="lesson-meta"><span id="inputSummary"></span><span class="teaching-tag">LIVE COMPUTATION <span>·</span> SYNTHETIC TEACHING EXAMPLE</span></div>
+  <div class="lesson-meta"><span id="inputSummary"></span><button id="methodMap" class="text-button" hidden>SAPP method map ↗</button><span id="teachingTag" class="teaching-tag">LIVE COMPUTATION <span>·</span> SYNTHETIC TEACHING EXAMPLE</span></div>
   <section class="workspace" aria-label="Interactive algorithm walkthrough">
     <div id="phases" class="phases" aria-label="Algorithm phases"></div>
     <div class="stage-layout">
       <div class="visual-panel"><div class="scene-header"><span id="sceneTitle"></span><div id="sceneTools" class="scene-tools" hidden></div><span id="sceneMeta" class="mono"></span></div><div id="scene" class="scene"></div><div id="selectionSummary" class="selection-summary" aria-live="polite"></div><div class="scene-footer"><div id="legend" class="legend"></div><span id="sceneHint"></span></div></div>
       <aside class="explanation" tabindex="0" aria-label="Current step explanation"><div class="step-kicker"><span id="phaseName"></span><span id="stepCounter"></span></div><div id="explanationContent" aria-live="polite" aria-atomic="true"></div><div id="prediction" class="prediction"></div></aside>
+      <div id="explanationScrollHint" class="explanation-scroll-hint" aria-hidden="true" hidden>Scroll for the explanation & symbols ↓</div>
     </div>
     <div class="transport"><button id="restart" class="icon-button" aria-label="Restart walkthrough" title="Restart">↺</button><button id="previous" class="icon-button" aria-label="Previous step" title="Previous step (left arrow)">←</button><button id="play" class="play-button" aria-label="Play animation"><span aria-hidden="true">▶</span> Play</button><button id="next" class="icon-button" aria-label="Next step" title="Next step (right arrow)">→</button><div class="scrubber"><label class="sr-only" for="timeline">Walkthrough step</label><input id="timeline" type="range" min="0" max="10" value="0"><span id="timelineLabel" class="mono"></span></div><label class="speed-label"><span class="sr-only">Playback speed</span><select id="speed"><option value="4000">0.5×</option><option value="2200" selected>1×</option><option value="1100">2×</option></select></label></div>
   </section>
+  <section id="sappOverview" class="method-overview" aria-label="SAPP method overview" hidden></section>
   <div class="below-grid">
     <section class="experiment panel"><div class="section-heading"><div><span class="eyebrow">MAKE IT YOUR EXPERIMENT</span><h2>Change a little. Learn a lot.</h2></div><button id="resetInputs" class="text-button">Reset inputs ↺</button></div><div id="controls"></div><div id="inputError" role="alert"></div><div class="experiment-note" id="experimentNote"></div></section>
     <section class="insight panel"><span class="eyebrow">THE IDEA TO TAKE WITH YOU</span><h2 id="takeawayTitle"></h2><p id="takeawayText"></p><button id="challenge" class="challenge-button"></button><p class="challenge-result" id="challengeResult" aria-live="polite"></p></section>
