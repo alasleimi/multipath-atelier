@@ -9,7 +9,7 @@ the original research checkout. The hosted version displays these references
 without linking to local files; the research papers and parent Python packages
 are not bundled in this standalone visualizer repository.
 
-Four lessons
+Four interactive lessons and a QR component diagram
   1. MPUrge: sort/prune, inspect actual neighborhood spacing, calculate costs,
      merge mutual minima, purge crossings and urge remaining paths to rematch.
   2. MPUrge-MAP: evaluate 12 survey references, inspect coverage-adjusted scores,
@@ -18,6 +18,13 @@ Four lessons
      watch range circles and individual least-squares updates, then repeat.
   4. SAPP: replay the survey fit, examine source visibility and residual density,
      add count and peak evidence, inspect the position distribution and median.
+  5. QR-PointNet (#qr): follow shared set encoding, query-reference pair evidence,
+     displacement votes, learned reference consensus and context correction.
+     Switch QR-S / QR-D to compare the 32-hypothesis mean with the deterministic
+     zero-code readout. This is an architecture guide, not browser neural inference.
+     Training-only supervision and the September 2026 core equations are separate.
+     No QR weights, private survey data or manuscript PDF are bundled. Later JEPA
+     experiments and local-transport variants are outside this diagram's scope.
 
 Controls
   Play/pause, previous/next, timeline, phase shortcuts, 0.5x/1x/2x playback.
@@ -56,6 +63,7 @@ Files
   generate_data.py     Rebuilds the synthetic survey with real project Python.
   build.cjs            Rebuilds index.html without any npm dependencies.
   test-engine.cjs      Independent Python fixture and numerical checks.
+  test-qr-browser.cjs  Optional QR routing, controls and responsive browser QA.
   test-fixtures.json   Python-generated reference results.
   .qa/                 Browser tests and review screenshots; not needed to run.
 
@@ -81,6 +89,12 @@ Browser verification in the original project checkout
   npm install --prefix .qa playwright --no-audit --no-fund
   node .qa/browser-test.cjs
   node .qa/medium-fixes-test.cjs
+
+QR browser verification (requires Microsoft Edge and an installed Playwright)
+  Set PLAYWRIGHT_MODULE to the Playwright package location, or install it where
+  Node can resolve it, then run: node test-qr-browser.cjs
+  Set QR_TEST_URL=https://alasleimi.github.io/multipath-atelier/ to test deployment.
+  Screenshots go to .qa/qr-local or .qa/qr-hosted; they are not published.
 
 Validated on the final local artifact in headless Edge: all four lessons,
 playback, input validation, nested association, posterior candidate inspection,

@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="An interactive, explainable laboratory for MPUrge, MPUrge-MAP, SMART-LEA and SAPP.">
+<meta name="description" content="Explore MPUrge, MPUrge-MAP, SMART-LEA and SAPP, plus a component diagram of QR-PointNet's query-reference localization.">
 <title>Multipath Atelier — an interactive localization lab</title>
-<style>/*__STYLE__*/</style>
+<style>/*__STYLE__*/
+/*__QR_STYLE__*/</style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to the experiment</a>
@@ -16,6 +17,7 @@
     <a href="#map" data-lesson="map"><span class="nav-number">02</span><span><b>MPUrge-MAP</b><small>Turn matches into a place</small></span><span class="nav-arrow">↗</span></a>
     <a href="#smart" data-lesson="smart"><span class="nav-number">03</span><span><b>SMART-LEA</b><small>Refine through geometry</small></span><span class="nav-arrow">↗</span></a>
     <a href="#sapp" data-lesson="sapp"><span class="nav-number">04</span><span><b>SAPP</b></span><span class="nav-arrow">↗</span></a>
+    <a href="#qr" data-lesson="qr"><span class="nav-number">05</span><span><b>QR-PointNet</b><small>Inside the learned consensus</small></span><span class="nav-arrow">↗</span></a>
   </nav>
   <div class="sidebar-note"><span class="mini-orbit" aria-hidden="true">◎</span><p>One signal.<br>Many paths.<br><em>A little more understanding.</em></p></div>
   <div class="sidebar-bottom"><button id="fundamentals" class="text-button">↗ &nbsp; Start with the signal</button><button id="about" class="text-button">Sources & teaching assumptions</button><span class="offline"><i></i> LOCAL · WORKS OFFLINE</span></div>
@@ -37,7 +39,8 @@
     <section class="insight panel"><span class="eyebrow">THE IDEA TO TAKE WITH YOU</span><h2 id="takeawayTitle"></h2><p id="takeawayText"></p><button id="challenge" class="challenge-button"></button><p class="challenge-result" id="challengeResult" aria-live="polite"></p></section>
   </div>
   <details id="inspector" class="inspector"><summary><div><span class="inspector-icon">⌘</span><span><b>Under the surface</b><small>The exact numbers behind the current frame</small></span></div><span class="details-toggle">Inspect calculations <span aria-hidden="true">+</span></span></summary><div id="numerical" class="numerical"></div></details>
-  <footer><span>MULTIPATH ATELIER <span class="slash">/</span> LEARN BY FOLLOWING THE EVIDENCE<br><button id="basicsFooter" class="text-button">Signal basics</button> · <button id="aboutFooter" class="text-button">Sources & assumptions</button></span><span>Space to play · ← → to step · R to restart</span></footer>
+  <!--__QR__-->
+  <footer><span>MULTIPATH ATELIER <span class="slash">/</span> LEARN BY FOLLOWING THE EVIDENCE<br><button id="basicsFooter" class="text-button">Signal basics</button> · <button id="aboutFooter" class="text-button">Sources & assumptions</button></span><span id="playbackHelp">Space to play · ← → to step · R to restart</span></footer>
 </main>
 <dialog id="modal"><div class="dialog-top"><span class="eyebrow">FIELD NOTES</span><button id="closeModal" class="icon-button" aria-label="Close dialog">×</button></div><div id="modalContent"></div></dialog>
 <div id="toast" class="toast" role="status"></div>

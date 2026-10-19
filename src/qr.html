@@ -1,0 +1,76 @@
+<section id="qrArchitecture" class="qr-architecture" aria-label="QR-PointNet component diagram" hidden>
+  <div class="qr-toolbar">
+    <div><span class="eyebrow">FOLLOW THE INFORMATION</span><p>One architecture. Two inference variants.</p></div>
+    <fieldset class="qr-switch"><legend class="sr-only">QR inference variant</legend>
+      <label><input type="radio" name="qrVariant" value="s" checked><span>QR-S <small>stochastic</small></span></label>
+      <label><input type="radio" name="qrVariant" value="d"><span>QR-D <small>deterministic</small></span></label>
+    </fieldset>
+  </div>
+
+  <figure class="qr-figure" aria-labelledby="qrFigureCaption">
+    <div class="qr-flow">
+      <section class="qr-block qr-encode" aria-labelledby="qrEncodeTitle">
+        <div class="qr-block-label"><span>01</span> SET ENCODER</div>
+        <h2 id="qrEncodeTitle">Listen to the paths.</h2>
+        <div class="qr-inputs"><div><b>Query Q</b><small>Unknown receiver</small><svg class="qr-peaks" viewBox="0 0 100 28" aria-hidden="true"><path d="M4 26V21M25 26V9M46 26V18M67 26V3M88 26V15"/></svg></div><div><b>Reference R<sub>j</sub></b><small>Survey acquisition</small><svg class="qr-peaks" viewBox="0 0 100 28" aria-hidden="true"><path d="M4 26V17M25 26V3M46 26V23M67 26V10M88 26V20"/></svg></div></div>
+        <div class="qr-inner-arrow" aria-hidden="true">↓ &nbsp; same encoder &nbsp; ↓</div>
+        <div class="qr-operation">Shared path MLP<span>Masked mean + max + count</span></div>
+        <p>Delays / path lengths, excess lengths and optional power. Fourier features enrich each path token; padding is masked.</p>
+        <div class="qr-equation">e<sub>q</sub> = f(Q) &nbsp; e<sub>j</sub> = f(R<sub>j</sub>)</div>
+        <div class="qr-edge" aria-hidden="true">embeddings →</div>
+      </section>
+
+      <section class="qr-block qr-pair" aria-labelledby="qrPairTitle">
+        <div class="qr-block-label"><span>02</span> PAIR EVIDENCE</div>
+        <h2 id="qrPairTitle">Ask every reference.</h2>
+        <div class="qr-operation">Pair feature network<span>e<sub>q</sub>, e<sub>j</sub>, difference, product</span></div>
+        <div class="qr-side-input"><b>+ Fine path comparisons</b><span>Bidirectional nearest-delay summaries, directly from Q and R<sub>j</sub>.</span></div>
+        <div class="qr-side-input"><b>+ Known coordinates</b><span>Survey position x<sub>j</sub> and AP metadata enter here, not into the path encoder.</span></div>
+        <p>Produces pair features h<sub>j</sub>, a predicted separation ρ<sub>j</sub>, and a learned similarity s<sub>j</sub>.</p>
+        <div class="qr-edge" aria-hidden="true">pair evidence →</div>
+      </section>
+
+      <section class="qr-block qr-vote" aria-labelledby="qrVoteTitle">
+        <div class="qr-block-label"><span>03</span> REFERENCE VOTES</div>
+        <h2 id="qrVoteTitle">Propose a position.</h2>
+        <div class="qr-latent"><b id="qrLatentTitle">Shared latent z<sub>k</sub> ∈ ℝ⁴</b><span id="qrLatentText">One code per draw k, shared by every reference.</span><span aria-hidden="true">↓</span></div>
+        <div class="qr-operation">Displacement + vote-score heads<span>Conditioned on h<sub>j</sub> and z<sub>k</sub></span></div>
+        <div class="qr-equation">v<sub>jk</sub> = x<sub>j</sub> + Δ(h<sub>j</sub>, z<sub>k</sub>)</div>
+        <p>Add a predicted displacement to each surveyed coordinate. Similarity, predicted separation and the vote-score head determine the weight.</p>
+        <div class="qr-equation">w<sub>jk</sub> = softmax<sub>over j</sub>(ℓ<sub>jk</sub>)</div>
+        <div class="qr-edge" aria-hidden="true">votes + weights →</div>
+      </section>
+
+      <section class="qr-block qr-consensus" aria-labelledby="qrConsensusTitle">
+        <div class="qr-block-label"><span>04</span> GLOBAL HYPOTHESIS</div>
+        <h2 id="qrConsensusTitle">Bring the votes together.</h2>
+        <div class="qr-operation">Weighted reference consensus<span>All valid same-AP bank acquisitions</span></div>
+        <div class="qr-equation">t<sub>k</sub> = ∑<sub>j</sub> w<sub>jk</sub> v<sub>jk</sub></div>
+        <div class="qr-inner-arrow" aria-hidden="true">↓</div>
+        <div class="qr-operation">Learned context correction<span>Weighted pair features + query embedding + t<sub>k</sub></span></div>
+        <div class="qr-equation">ŷ<sub>k</sub> = t<sub>k</sub> + C(∑<sub>j</sub> w<sub>jk</sub> h<sub>j</sub>, e<sub>q</sub>, t<sub>k</sub>)</div>
+        <p>One corrected global coordinate per draw—not one final hypothesis per reference.</p>
+      </section>
+    </div>
+
+    <div class="qr-readout" aria-live="polite" aria-atomic="true">
+      <div class="qr-readout-lead"><span class="eyebrow">05 / DEPLOYED READOUT</span><h2 id="qrReadoutTitle">32 hypotheses → one mean</h2><div id="qrReadoutFormula" class="qr-equation">ŷ = (1 / 32) ∑<sub>k=1…32</sub> ŷ<sub>k</sub></div></div>
+      <div><p id="qrReadoutText">QR-S repeats the vote-and-consensus stages with 32 fixed antithetic Gaussian codes (z and −z), then takes the uniform mean of the 32 corrected global hypotheses.</p><p class="qr-unit-note">Finally, undo the survey-coordinate normalization to return a position in metres.</p></div>
+      <div class="qr-count"><b id="qrVoteCount">M × 32</b><span>pair votes</span><span aria-hidden="true">↓</span><b id="qrGlobalCount">32</b><span>global hypotheses</span><span aria-hidden="true">↓</span><b>1</b><span>reported position</span></div>
+    </div>
+    <figcaption id="qrFigureCaption">M is the number of reference acquisitions, not necessarily the number of unique survey positions. In the September NIST protocol, each same-AP bank has 140 acquisitions: 20 positions × seven anonymous conditions. The bank size is protocol-dependent.</figcaption>
+  </figure>
+
+  <div class="qr-notes">
+    <section class="qr-note"><span class="eyebrow">WHY AN UNORDERED REPRESENTATION?</span><h2>Paths are a set. References are a set.</h2><p>Shared path transforms and symmetric pooling remove dependence on path order. With fixed latent codes, reordering references only reorders the softmax and weighted-sum terms. Nearest-delay ties use deterministic preprocessing.</p><p>The September protocol retains up to nine paths; masking and pooling can handle other path counts. All-path results require a separately trained and evaluated protocol.</p></section>
+    <section class="qr-note qr-caution"><span class="eyebrow">WHERE MULTIMODALITY ENTERS</span><h2>Several hypotheses ≠ a mode selector.</h2><p>QR-S can generate alternative global predictions, but 32 draws do not guarantee 32 distinct modes or a calibrated posterior. The deployed mean can fall between lobes.</p><p>The core model does not cluster lobes, select the best one using truth, or fuse QR-S with QR-D. Each variant is a separately trained, independently deployed network.</p></section>
+  </div>
+
+  <details class="qr-details"><summary>Training-only supervision & exact core equations <span aria-hidden="true">+</span></summary>
+    <div class="qr-details-content">
+      <div><h3>Training is a separate lane</h3><p>Known training coordinates supervise the deployed mean, pair displacements, predicted separations and proximity-based similarity. QR-S also uses best-of-K global supervision (K = 8 during training); QR-D uses one zero code and omits the global best-of-K term.</p><p>The September NIST protocol additionally uses survey-fitted range surfaces to synthesize continuous training fingerprints. This is an offline augmentation choice, not access to simulator geometry at inference; its simulator-specific bias needs separate controls.</p><p>Held-out query truth is used only for evaluation. It does not choose a hypothesis or a reference at deployment.</p></div>
+      <div><h3>September QR-D / QR-S core</h3><div class="qr-equation">ℓ<sub>jk</sub> = s<sub>j</sub> − ρ<sub>j</sub> / 0.15 + b(h<sub>j</sub>, z<sub>k</sub>)<br>w<sub>jk</sub> = exp(ℓ<sub>jk</sub>) / ∑<sub>l</sub> exp(ℓ<sub>lk</sub>)<br>position [m] = origin + span ⊙ ŷ</div><p>ρ is predicted normalized physical separation, not a measured query-to-reference distance. Δ, b and C are learned heads. The two coordinate corrections in this core are unrestricted Cartesian outputs.</p><p>Training loss: mean-location error + 0.3 × best-global error + 0.2 × best-pair error + 0.3 × (distance loss + 0.05 × similarity loss). The best-global term is zero-weighted in QR-D.</p></div>
+    </div>
+  </details>
+  <div class="qr-scope"><b>Diagram scope.</b> QR-PointNet core in the 8 September 2026 manuscript, checked against the query-reference implementation. This is an architecture guide, not browser neural inference or an accuracy benchmark. It does not depict subsequent JEPA experiments or local-transport variants. No floor plan, obstacle geometry, ray/VT identities, acquisition-condition labels or query truth enter this inference pipeline. Research weights, private data and the manuscript PDF are not bundled with this site.</div>
+</section>

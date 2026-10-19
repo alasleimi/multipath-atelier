@@ -385,7 +385,35 @@
     else return;
     buildRun();$(id)?.focus({preventScroll:true});
   }
-  function changeLesson(){const value=location.hash.slice(1).split('?')[0];state.lesson=meta[value]?value:'mpurge';state.selectedRef=null;state.cell=null;buildRun();}
+  function updateQRVariant(){
+    const stochastic=document.querySelector('input[name="qrVariant"]:checked').value==='s';
+    $('qrLatentTitle').innerHTML=stochastic?'Shared latent z<sub>k</sub> ∈ ℝ⁴':'Fixed zero code z = 0';
+    $('qrLatentText').textContent=stochastic?'One code per draw k, shared by every reference.':'One deterministic pass, with zero code for every reference.';
+    $('qrReadoutTitle').textContent=stochastic?'32 hypotheses → one mean':'One hypothesis → one position';
+    $('qrReadoutFormula').innerHTML=stochastic?'ŷ = (1 / 32) ∑<sub>k=1…32</sub> ŷ<sub>k</sub>':'ŷ = ŷ<sub>1</sub>';
+    $('qrReadoutText').textContent=stochastic?'QR-S repeats the vote-and-consensus stages with 32 fixed antithetic Gaussian codes (z and −z), then takes the uniform mean of the 32 corrected global hypotheses.':'QR-D fixes the latent code to zero. All references still cast learned, weighted votes; their context-corrected consensus is returned directly. There is no averaging across latent draws.';
+    $('qrVoteCount').textContent=stochastic?'M × 32':'M × 1';
+    $('qrGlobalCount').textContent=stochastic?'32':'1';
+  }
+  function changeLesson(){
+    const value=location.hash.slice(1).split('?')[0];
+    // The skip link changes the fragment without changing the current lesson.
+    if(value==='main'&&document.title!=='Multipath Atelier — an interactive localization lab')return;
+    pause();
+    const qr=value==='qr';state.lesson=qr?'qr':meta[value]?value:'mpurge';state.selectedRef=null;state.cell=null;
+    $('qrArchitecture').hidden=!qr;
+    document.querySelectorAll('.workspace,.below-grid,#inspector,#export,#playbackHelp').forEach(el=>{el.hidden=qr;});
+    document.querySelector('.teaching-tag').textContent=qr?'ARCHITECTURE GUIDE · NO LIVE NEURAL INFERENCE':'LIVE COMPUTATION · SYNTHETIC TEACHING EXAMPLE';
+    if(!qr){buildRun();return;}
+    $('eyebrow').textContent='METHOD 05 / QUERY–REFERENCE POINTNET';
+    $('title').textContent='From path sets to a position.';
+    $('subtitle').textContent='Follow the components of QR-PointNet: shared set encoding, reference-relative votes, learned consensus and the stochastic hypotheses in between.';
+    $('chapterIndex').textContent='05';$('breadcrumb').textContent='Query-reference architecture';
+    $('inputSummary').textContent='INPUT · Query paths + surveyed reference bank + AP metadata';
+    document.querySelectorAll('[data-lesson]').forEach(a=>{const current=a.dataset.lesson==='qr';a.classList.toggle('active',current);if(current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+    document.title='QR-PointNet — Multipath Atelier';updateQRVariant();
+  }
+  $('qrArchitecture').addEventListener('change',e=>{if(e.target.name==='qrVariant')updateQRVariant();});
   $('play').addEventListener('click',play);$('next').addEventListener('click',()=>goto(state.t+1));$('previous').addEventListener('click',()=>goto(state.t-1));$('restart').addEventListener('click',()=>goto(0));
   $('timeline').addEventListener('input',e=>goto(+e.target.value));$('speed').addEventListener('change',e=>{state.speed=+e.target.value;schedule();});
   $('phases').addEventListener('click',e=>{const p=e.target.closest('[data-phase]');if(p)goto(steps.findIndex(s=>s.phase===+p.dataset.phase));});
@@ -398,7 +426,7 @@
     if(state.lesson==='smart'){state.initial=state.initial[0]===7.2?[3.8,2.8]:[7.2,5.2];buildRun();$('challengeResult').textContent=`Starting at ${xy(state.initial)} m. Predict whether the first path associations will still be correct.`;}
     if(state.lesson==='sapp'){state.missing=!state.missing;state.clutter=state.missing?1:0;buildRun();goto(steps.findIndex(s=>s.mode==='evidence'));$('challengeResult').textContent=`The query now has ${run.query.length} peaks. Step through the evidence to see the probability map change.`;}
   });
-  $('inspector').addEventListener('toggle',()=>{if($('inspector').open)renderNumerical();});
+  $('inspector').addEventListener('toggle',()=>{if(state.lesson!=='qr'&&$('inspector').open)renderNumerical();});
   function selectDiagram(e){
     const ref=e.target.closest('[data-ref]'),cell=e.target.closest('[data-cell]'),candidate=e.target.closest('[data-candidate]');
     if(e.target.id==='replayAssociation'){const result=state.lesson==='map'?run.ranked.find(r=>r.id===+e.target.dataset.ref).result:run.rounds[steps[state.t].round||0].association;openAssociation(result);return;}
@@ -423,10 +451,11 @@
   $('selectionSummary').addEventListener('click',e=>{if(e.target.id==='jumpToNumbers'){$('inspector').open=true;renderNumerical();$('inspector').scrollIntoView({behavior:'smooth',block:'start'});$('inspector').querySelector('summary').focus({preventScroll:true});}});
   $('numerical').addEventListener('change',e=>{if(e.target.id==='sourceSelect'){state.source=+e.target.value;renderScene();renderNumerical();}});
   $('prediction').addEventListener('click',e=>{if(e.target.dataset.answer){$('answerText').textContent=e.target.dataset.answer==='correct'?steps[state.t].quiz[3]:'Take another look. '+steps[state.t].quiz[3].replace(/^Correct\. /,'');}});
-  $('export').addEventListener('click',exportRun);$('fundamentals').addEventListener('click',fundamentals);$('about').addEventListener('click',about);
-  $('basicsFooter').addEventListener('click',fundamentals);$('aboutFooter').addEventListener('click',about);
+  function showSources(){about();$('modalContent').insertAdjacentHTML('beforeend','<h3>QR-PointNet architecture guide</h3><p>The fifth section diagrams the QR-D / QR-S core from the September 2026 manuscript, checked against its query-reference implementation. It explains data flow, not live neural inference. The QR-S / QR-D switch changes the explanation only. No model weights, private survey data, benchmark predictions or manuscript PDF are included. Training-only assumptions and equations are listed beneath the diagram.</p>');}
+  $('export').addEventListener('click',exportRun);$('fundamentals').addEventListener('click',fundamentals);$('about').addEventListener('click',showSources);
+  $('basicsFooter').addEventListener('click',fundamentals);$('aboutFooter').addEventListener('click',showSources);
   $('closeModal').addEventListener('click',()=>$('modal').close());$('modal').addEventListener('click',e=>{if(e.target===$('modal'))$('modal').close();if(e.target.id==='detailNext'||e.target.id==='detailPrev'){detailIndex+=e.target.id==='detailNext'?1:-1;preserveFocus($('modalContent'),renderAssociation);const next=$('detailNext'),prev=$('detailPrev');if(document.activeElement===document.body||document.activeElement===$('modal'))(next.disabled?prev:next).focus({preventScroll:true});}});
-  document.addEventListener('keydown',e=>{if($('modal').open||e.target.closest('input,textarea,select,button,a,[role="button"],summary')||e.ctrlKey||e.metaKey||e.altKey)return;if(e.code==='Space'){e.preventDefault();play();}if(e.key==='ArrowRight'){e.preventDefault();goto(state.t+1);}if(e.key==='ArrowLeft'){e.preventDefault();goto(state.t-1);}if(e.key.toLowerCase()==='r')goto(0);});
+  document.addEventListener('keydown',e=>{if(state.lesson==='qr'||$('modal').open||e.target.closest('input,textarea,select,button,a,[role="button"],summary')||e.ctrlKey||e.metaKey||e.altKey)return;if(e.code==='Space'){e.preventDefault();play();}if(e.key==='ArrowRight'){e.preventDefault();goto(state.t+1);}if(e.key==='ArrowLeft'){e.preventDefault();goto(state.t-1);}if(e.key.toLowerCase()==='r')goto(0);});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});window.addEventListener('hashchange',changeLesson);
   changeLesson();
 })();
