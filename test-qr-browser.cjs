@@ -58,9 +58,18 @@ const {pathToFileURL} = require('node:url');
       await page.locator('#timeline').fill(await page.locator('#timeline').getAttribute('max'));
       const explanation = await page.locator('#explanationContent').innerText();
       assert.ok(explanation.length > 80 && !explanation.includes('NaN'));
+      if (lesson === 'sapp') {
+        assert.equal(await page.locator('#sappOverview').isVisible(), true);
+        await page.locator('#methodMap').click();
+        assert.equal(await page.locator('#modal').isVisible(), true);
+        await page.locator('#closeModal').click();
+      }
     }
     await page.locator('#play').click();
     await page.locator('[data-lesson="qr"]').click();
+    assert.equal(await page.locator('#sappOverview').isVisible(), false);
+    assert.equal(await page.locator('#methodMap').isVisible(), false);
+    assert.equal(await page.locator('.teaching-tag').isVisible(), true);
     assert.equal(await page.locator('#play').getAttribute('aria-label'), 'Play animation');
     for (const viewport of [{width:1366,height:768},{width:1100,height:800},{width:820,height:1180},{width:390,height:844},{width:320,height:740}]) {
       await page.setViewportSize(viewport);
