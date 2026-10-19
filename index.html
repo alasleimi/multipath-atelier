@@ -23,6 +23,7 @@
 .selection-summary:empty{display:none}
 
 @media(min-width:1001px){#scene svg text[font-size="8"],#scene svg text[font-size="9"],#scene svg text[font-size="10"],#scene svg text[font-size="11"],#scene svg .small,#scene svg .axis-label{font-size:12px}}
+.scene-tools{display:flex;align-items:center;gap:4px;font:11px var(--sans);letter-spacing:0}.scene-tools[hidden]{display:none}.scene-tools>span{margin-right:4px;color:var(--muted)}.scene-tools button{min-width:25px;height:26px;background:#f5f7ef;border:1px solid #d8e0d0;border-radius:3px;font:11px var(--sans);padding:3px 6px}.scene-tools button[aria-pressed="true"]{background:var(--green);color:white;border-color:var(--green)}.scene-tools .count-jump{margin-left:5px;white-space:nowrap}.scene-header:has(.scene-tools:not([hidden])){align-items:center;min-height:45px;flex-wrap:wrap}.scene-tools button:focus-visible{outline:2px solid var(--green);outline-offset:2px}@media(max-width:720px){.scene-tools{flex-wrap:wrap}.scene-header:has(.scene-tools:not([hidden])){gap:9px}}
 </style>
 </head>
 <body>
@@ -46,7 +47,7 @@
   <section class="workspace" aria-label="Interactive algorithm walkthrough">
     <div id="phases" class="phases" aria-label="Algorithm phases"></div>
     <div class="stage-layout">
-      <div class="visual-panel"><div class="scene-header"><span id="sceneTitle"></span><span id="sceneMeta" class="mono"></span></div><div id="scene" class="scene"></div><div id="selectionSummary" class="selection-summary" aria-live="polite"></div><div class="scene-footer"><div id="legend" class="legend"></div><span id="sceneHint"></span></div></div>
+      <div class="visual-panel"><div class="scene-header"><span id="sceneTitle"></span><div id="sceneTools" class="scene-tools" hidden></div><span id="sceneMeta" class="mono"></span></div><div id="scene" class="scene"></div><div id="selectionSummary" class="selection-summary" aria-live="polite"></div><div class="scene-footer"><div id="legend" class="legend"></div><span id="sceneHint"></span></div></div>
       <aside class="explanation" tabindex="0" aria-label="Current step explanation"><div class="step-kicker"><span id="phaseName"></span><span id="stepCounter"></span></div><div id="explanationContent" aria-live="polite" aria-atomic="true"></div><div id="prediction" class="prediction"></div></aside>
     </div>
     <div class="transport"><button id="restart" class="icon-button" aria-label="Restart walkthrough" title="Restart">↺</button><button id="previous" class="icon-button" aria-label="Previous step" title="Previous step (left arrow)">←</button><button id="play" class="play-button" aria-label="Play animation"><span aria-hidden="true">▶</span> Play</button><button id="next" class="icon-button" aria-label="Next step" title="Next step (right arrow)">→</button><div class="scrubber"><label class="sr-only" for="timeline">Walkthrough step</label><input id="timeline" type="range" min="0" max="10" value="0"><span id="timelineLabel" class="mono"></span></div><label class="speed-label"><span class="sr-only">Playback speed</span><select id="speed"><option value="4000">0.5×</option><option value="2200" selected>1×</option><option value="1100">2×</option></select></label></div>
@@ -332,7 +333,7 @@
         steps=[stage(0,'Survey first. Localize later.',`At 35 known positions, collect sets of path lengths without reflection labels. The fitted model in this file was learned from these survey sets using the project's SAPP implementation.`, 'training data = {(positionᵢ, delay setᵢ)}','Survey training is precomputed and replayed here. Query generation, scoring and position decoding run live in your browser.',{scene:'room',mode:'survey'})];
         m.anchors.forEach((a,i)=>steps.push(stage(1,`Discover source ${i+1} from consensus.`,`The fitted source at (${fmt(a[0],2)}, ${fmt(a[1],2)}, |h|=${fmt(a[2],2)}) predicts a nearby observed path at ${m.support[i]} of 35 survey positions. Its retained discovery residual is ${fmt(m.residual[i],4)} m.`, 'ρⱼ(x) = √((x−aⱼ)² + (y−bⱼ)² + hⱼ²)','Training proposes sources from triples of survey measurements, scores their support, then refines them. These are the actual retained fit outputs, not individual RANSAC trials.',{scene:'room',mode:'discover',source:i})));
         steps.push(stage(2,'Share responsibility for each peak.','During training, each peak contributes softly to source counts or clutter. Ambiguous peaks can share responsibility; no hard one-to-one match is forced.', 'rⱼ = νⱼ k(d | ρⱼ) / [κ/L + Σₖ νₖ k(d | ρₖ)]','Soft counts estimate expected peaks per source. Their sums need not be integers.',{scene:'room',mode:'responsibility'}));
-        steps.push(stage(2,'Learn where a source is visible.','Smooth the learned source counts across nearby survey positions. The heatmap shows the expected count from the selected source, before query survival is applied.', 'νⱼ(x) = spatially smoothed soft counts','A source can be strong in one part of the room and weak elsewhere. Select a different source in the inspector to compare.',{scene:'room',mode:'visibility'}));
+        steps.push(stage(2,'How many echoes should this source contribute?','Each square is a possible receiver position. Its color shows the expected number of peaks from one learned source: darker green means more. A count near 1 means about one echo per observation, on average.', 'νⱼ(x) = expected peaks from source j\n         at receiver position x','These are soft expected counts, so fractions and values slightly above one are possible. Choose a source above the map, then inspect its lowest and highest counts. Receiver-location scoring comes later, in Evidence.',{scene:'room',mode:'visibility'}));
         steps.push(stage(2,'Keep what geometry did not explain.','Survey peaks with residual responsibility build a spatially weighted delay density b(d | x). The amber curve preserves repeatable structure left unexplained by the fitted sources.', 's(d | x) = Σⱼ νⱼ(x) k(d | ρⱼ(x)) + b(d | x)','Residual survey density and uniform query clutter are different components. The inspector displays both.',{scene:'density',mode:'background'}));
         steps.push(stage(3,'A new set of echoes arrives.',`The current query contains ${query.length} paths. For each candidate position, combine the learned source and residual densities, then allow for survival and extra clutter.`, 'λ(d | x) = 0.75 s(d | x) + 2 / 25','This reproduces the package’s fixed-nuisance likelihood: survival 6/(6+2), clutter 2/1, and observation window [0,25] m.',{scene:'density',mode:'density'}));
         steps.push(stage(3,'Charge for the paths you expect.','Begin with the negative integrated intensity. A candidate expecting many detections receives a larger negative term before any observed peak adds evidence.', 'ℓ₀(x) = −0.75 ∫s(d | x) dd − 2','This is the Poisson count penalty. Removing it changes the model; it is not an optional normalization constant.',{scene:'room',mode:'evidence',used:0,quiz:['Can a position lose score for predicting too many peaks?','Yes','No','Correct. The negative integrated intensity penalizes excess expected detections.']}));
@@ -400,7 +401,25 @@
     const motion=move?`class="move-point" style="--dx:${t.x(move[0])-x}px;--dy:${t.y(move[1])-y}px"`:'';
     return `<g pointer-events="none" ${motion} ${extra}>${type==='cross'?`<path d="M${x-5} ${y-5}l10 10m-10 0l10-10" stroke="${color}" stroke-width="2"/>`:`<circle cx="${x}" cy="${y}" r="${size}" fill="${type==='hollow'?'#fffefa':color}" stroke="${color}" stroke-width="2"/>`}${label?`<text x="${x+labelDx}" y="${y+labelDy}" text-anchor="${anchor}" font-size="10" style="fill:${color};paint-order:stroke;stroke:#fffefa;stroke-width:3;stroke-linejoin:round">${esc(label)}</text>`:''}</g>`;
   }
+  function visibilityStats(source=state.source){
+    const values=run.fs.map(f=>f.intensities[source]),low=E.argmin(values),high=E.argmin(values.map(v=>-v));
+    return {values,low,high,min:values[low],max:values[high],spread:values[high]-values[low]};
+  }
+  function visibilityDiagram(){
+    const stats=visibilityStats(),idx=state.selectedCandidate??run.mode,p=run.points[idx],value=stats.values[idx];
+    const X=x=>54+x*40,Y=y=>316-y*40;
+    const alternatives=LAB_DATA.model.anchors.map((_,j)=>visibilityStats(j).spread),contrast=E.argmin(alternatives.map(v=>-v));
+    let out=`<rect x="35" y="57" width="365" height="280" rx="4" fill="url(#dotgrid)"/><text x="54" y="28" font-size="19">Expected echoes from source ${state.source+1}</text><text x="54" y="49" font-size="13" fill="#637067">Each cell is a possible receiver position.</text><rect x="54" y="76" width="320" height="240" fill="#f8faf3" stroke="#a6b39c" stroke-width="1.5"/>`;
+    for(let x=0;x<=8;x+=2)out+=`<text x="${X(x)}" y="335" text-anchor="middle" font-size="12">${x}</text>`;
+    for(let y=0;y<=6;y+=2)out+=`<text x="43" y="${Y(y)+4}" text-anchor="end" font-size="12">${y}</text>`;
+    out+='<g data-key="heatmap" role="group" aria-label="Expected source counts across receiver positions. Tab to a cell, then use the arrow keys.">';
+    stats.values.forEach((v,i)=>{const q=run.points[i],a=v/1.8,label=`Candidate ${xy(q)} metres; source ${state.source+1} expected count ${fmt(v)}`;out+=`<rect class="heat-cell diagram-link" role="button" tabindex="${i===idx?0:-1}" aria-pressed="${i===idx}" aria-label="${label}" data-candidate="${i}" x="${X(q[0]-.125)}" y="${Y(q[1]+.125)}" width="10.3" height="10.3" fill="rgb(${Math.round(243-a*167)},${Math.round(246-a*129)},${Math.round(232-a*162)})"><title>${label}</title></rect>`;});
+    out+=`</g><rect data-key="selection" x="${X(p[0]-.15)}" y="${Y(p[1]+.15)}" width="12" height="12" class="selected-halo"/><path pointer-events="none" d="M${X(p[0])} ${Y(p[1])}H403V143H431" fill="none" stroke="#b86842" stroke-width="1.2" stroke-dasharray="3 3"/><text x="374" y="354" text-anchor="end" font-size="12">receiver x (m)</text><text x="39" y="68" font-size="12">y (m)</text><text x="54" y="378" font-size="13">Darker green = more expected echo peaks.</text>`;
+    out+=`<g pointer-events="none" data-key="visibility-reading"><rect x="432" y="83" width="245" height="211" rx="6" fill="#f2f5ed" stroke="#d7e0ce"/><text x="448" y="108" font-size="12" style="fill:#a25b37">INSPECTED CELL ${xy(p)} m</text><text id="visibilityValue" x="448" y="158" class="mono" font-size="40">${fmt(value)}</text><text x="448" y="181" font-size="13">expected peaks from this source</text><line x1="448" x2="661" y1="197" y2="197" stroke="#d7e0ce"/><text x="448" y="219" font-size="13">${value>=.95&&value<=1.05?'About one echo per observation.':`About ${fmt(value,2)} echoes per observation.`}</text><text x="448" y="239" font-size="12">An average; before query survival.</text><text x="448" y="276" font-size="12">Receiver location is inferred later.</text><text x="432" y="323" font-size="15">Room range: <tspan class="mono">${fmt(stats.min)}–${fmt(stats.max)}</tspan></text><text x="432" y="348" font-size="13">${stats.spread<.15?'Similar counts throughout the room.':'This source contributes less in some areas.'}</text><text x="432" y="371" font-size="12">${stats.spread<.15?`Compare source ${contrast+1} for more variation.`:'Use Low count / High count to compare.'}</text></g>`;
+    return svg(out,`Source ${state.source+1} expected peak counts across possible receiver positions. Selected cell ${xy(p)} has count ${fmt(value)}. This is a learned source-count map; receiver inference comes later.`).replace('role="img"','role="group"');
+  }
   function roomDiagram(s) {
+    if(state.lesson==='sapp'&&s.mode==='visibility')return visibilityDiagram();
     const smart=state.lesson==='smart', sapp=state.lesson==='sapp';
     const extended=smart||(sapp&&s.mode==='discover'),t=transform(extended);
     let out=`<rect x="35" y="20" width="650" height="355" fill="url(#dotgrid)"/>`;
@@ -510,7 +529,7 @@
     $('explanationContent').innerHTML=`<h2>${esc(s.title)}</h2><p>${esc(s.text)}</p><div class="formula">${esc(s.formula).replace(/\n/g,'<br>')}</div><p class="reason">${esc(s.why)}</p>`;
     $('prediction').innerHTML=s.quiz?`<p><b>Pause & predict.</b> ${esc(s.quiz[0])}</p><button data-answer="correct">${esc(s.quiz[1])}</button><button data-answer="wrong">${esc(s.quiz[2])}</button><div class="answer" id="answerText"></div>`:'';
     renderLegend(s);
-    $('sceneTitle').textContent=s.scene==='match'?'THE CORRESPONDENCE CANVAS':s.scene==='density'?'THE DELAY LANDSCAPE':state.lesson==='sapp'?'THE EVIDENCE LANDSCAPE':state.lesson==='smart'?'THE UNFOLDED ROOM':'THE FINGERPRINT MAP';
+    $('sceneTitle').textContent=s.scene==='match'?'THE CORRESPONDENCE CANVAS':s.scene==='density'?'THE DELAY LANDSCAPE':state.lesson==='sapp'?(s.mode==='visibility'?'SOURCE VISIBILITY':'THE EVIDENCE LANDSCAPE'):state.lesson==='smart'?'THE UNFOLDED ROOM':'THE FINGERPRINT MAP';
     $('sceneMeta').textContent=s.scene==='match'?`${run.originalQ.length} × ${run.originalR.length} paths`:state.lesson==='sapp'?`${LAB_DATA.survey.length} survey points`:state.lesson==='map'?'12 reference points':'5 known sources';
     $('sceneHint').textContent=state.lesson==='map'?'Select a reference to inspect':state.lesson==='sapp'&&['visibility','evidence','posterior','final'].includes(s.mode)?'Click a cell · or Tab, then arrow keys':s.scene==='match'?(s.matchState.phase==='cost'?'Ticks show actual relative distances':'Length order, not physical space'):'Coordinates and path lengths in metres';
     renderScene();
@@ -547,7 +566,7 @@
   }
   function preserveFocus(container,update){
     const el=document.activeElement,inside=container.contains(el);let selector;
-    if(inside){if(el.id)selector='#'+CSS.escape(el.id);else for(const key of ['cell','ref','candidate','phase'])if(el.dataset[key]!==undefined){selector=`[data-${key}="${el.dataset[key]}"]`;break;}}
+    if(inside){if(el.id)selector='#'+CSS.escape(el.id);else for(const key of ['cell','ref','candidate','phase','source','sourcepoint'])if(el.dataset[key]!==undefined){selector=`[data-${key}="${el.dataset[key]}"]`;break;}}
     update();if(selector){const target=container.querySelector(selector);if(target&&!target.disabled)target.focus({preventScroll:true});}
   }
   function renderSelection(s){
@@ -560,6 +579,8 @@
     const s=steps[state.t],scene=$('scene'),markup=s.scene==='match'?(s.matchState.phase==='cost'?patternDiagram(run,s.matchState):matchDiagram(run,s.matchState)):s.scene==='density'?densityDiagram(s):roomDiagram(s),template=document.createElement('template');template.innerHTML=markup;
     scene.classList.toggle('static-frame',!state.playing);
     preserveFocus(scene,()=>{if(scene.firstElementChild)reconcile(scene.firstElementChild,template.content.firstElementChild);else scene.append(template.content);});renderSelection(s);
+    const visibility=state.lesson==='sapp'&&s.mode==='visibility';$('sceneTools').hidden=!visibility;$('sceneMeta').hidden=visibility;
+    preserveFocus($('sceneTools'),()=>{$('sceneTools').innerHTML=visibility?`<span>Source</span>${LAB_DATA.model.anchors.map((_,j)=>`<button data-source="${j}" aria-label="Show source ${j+1}" aria-pressed="${j===state.source}">${j+1}</button>`).join('')}<button data-sourcepoint="low" class="count-jump">Low count</button><button data-sourcepoint="high" class="count-jump">High count</button>`:'';});
   }
   function pause(finish=false){state.playing=false;clearTimeout(state.timer);$('scene')?.getAnimations({subtree:true}).forEach(a=>{if(finish&&a.effect.getTiming().iterations!==Infinity)a.finish();else a.pause();});if($('play'))updatePlay();}
   function updatePlay(){$('play').innerHTML=state.playing?'<span aria-hidden="true">Ⅱ</span> Pause':state.t===steps?.length-1?'<span aria-hidden="true">↺</span> Replay':'<span aria-hidden="true">▶</span> Play';$('play').setAttribute('aria-label',state.playing?'Pause animation':state.t===steps?.length-1?'Replay animation':'Play animation');}
@@ -658,6 +679,7 @@
     }
   }
   $('scene').addEventListener('click',selectDiagram);$('numerical').addEventListener('click',selectDiagram);
+  $('sceneTools').addEventListener('click',e=>{const source=e.target.closest('[data-source]'),point=e.target.closest('[data-sourcepoint]');if(!source&&!point)return;pause();if(source)state.source=+source.dataset.source;if(point)state.selectedCandidate=visibilityStats()[point.dataset.sourcepoint];renderScene();if($('inspector').open)renderNumerical();});
   $('scene').addEventListener('keydown',e=>{
     if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-ref],[data-candidate]')){e.preventDefault();selectDiagram(e);return;}
     if(e.target.hasAttribute('data-candidate')&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
