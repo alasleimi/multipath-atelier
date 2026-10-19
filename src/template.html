@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="An interactive, explainable laboratory for MPUrge, MPUrge-MAP, SMART-LEA and SAPP.">
+<title>Multipath Atelier — an interactive localization lab</title>
+<style>/*__STYLE__*/</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the experiment</a>
+<aside class="sidebar">
+  <a class="brand" href="#mpurge" aria-label="Multipath Atelier home"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M7 30V11l13 19V11l13 19V11" fill="none" stroke="currentColor" stroke-width="2.3"/><circle cx="33" cy="8" r="3" fill="currentColor"/></svg><span>multipath<span class="brand-sub">A T E L I E R</span></span></a>
+  <div class="nav-label">THE INTERACTIVE COLLECTION</div>
+  <nav aria-label="Algorithm lessons">
+    <a href="#mpurge" data-lesson="mpurge"><span class="nav-number">01</span><span><b>MPUrge</b><small>Find the correspondence</small></span><span class="nav-arrow">↗</span></a>
+    <a href="#map" data-lesson="map"><span class="nav-number">02</span><span><b>MPUrge-MAP</b><small>Turn matches into a place</small></span><span class="nav-arrow">↗</span></a>
+    <a href="#smart" data-lesson="smart"><span class="nav-number">03</span><span><b>SMART-LEA</b><small>Refine through geometry</small></span><span class="nav-arrow">↗</span></a>
+    <a href="#sapp" data-lesson="sapp"><span class="nav-number">04</span><span><b>SAPP</b></span><span class="nav-arrow">↗</span></a>
+  </nav>
+  <div class="sidebar-note"><span class="mini-orbit" aria-hidden="true">◎</span><p>One signal.<br>Many paths.<br><em>A little more understanding.</em></p></div>
+  <div class="sidebar-bottom"><button id="fundamentals" class="text-button">↗ &nbsp; Start with the signal</button><button id="about" class="text-button">Sources & teaching assumptions</button><span class="offline"><i></i> LOCAL · WORKS OFFLINE</span></div>
+</aside>
+<main id="main">
+  <header class="topbar"><span>THE LOCALIZATION LAB <span class="slash">/</span> <span id="breadcrumb">Path association</span></span><button id="export" class="text-button">Export this run <span aria-hidden="true">↗</span></button></header>
+  <section class="intro"><div><div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1><p id="subtitle"></p></div><div class="chapter-index" id="chapterIndex" aria-hidden="true"></div></section>
+  <div class="lesson-meta"><span id="inputSummary"></span><span class="teaching-tag">LIVE COMPUTATION <span>·</span> SYNTHETIC TEACHING EXAMPLE</span></div>
+  <section class="workspace" aria-label="Interactive algorithm walkthrough">
+    <div id="phases" class="phases" aria-label="Algorithm phases"></div>
+    <div class="stage-layout">
+      <div class="visual-panel"><div class="scene-header"><span id="sceneTitle"></span><span id="sceneMeta" class="mono"></span></div><div id="scene" class="scene"></div><div id="selectionSummary" class="selection-summary" aria-live="polite"></div><div class="scene-footer"><div id="legend" class="legend"></div><span id="sceneHint"></span></div></div>
+      <aside class="explanation" tabindex="0" aria-label="Current step explanation"><div class="step-kicker"><span id="phaseName"></span><span id="stepCounter"></span></div><div id="explanationContent" aria-live="polite" aria-atomic="true"></div><div id="prediction" class="prediction"></div></aside>
+    </div>
+    <div class="transport"><button id="restart" class="icon-button" aria-label="Restart walkthrough" title="Restart">↺</button><button id="previous" class="icon-button" aria-label="Previous step" title="Previous step (left arrow)">←</button><button id="play" class="play-button" aria-label="Play animation"><span aria-hidden="true">▶</span> Play</button><button id="next" class="icon-button" aria-label="Next step" title="Next step (right arrow)">→</button><div class="scrubber"><label class="sr-only" for="timeline">Walkthrough step</label><input id="timeline" type="range" min="0" max="10" value="0"><span id="timelineLabel" class="mono"></span></div><label class="speed-label"><span class="sr-only">Playback speed</span><select id="speed"><option value="4000">0.5×</option><option value="2200" selected>1×</option><option value="1100">2×</option></select></label></div>
+  </section>
+  <div class="below-grid">
+    <section class="experiment panel"><div class="section-heading"><div><span class="eyebrow">MAKE IT YOUR EXPERIMENT</span><h2>Change a little. Learn a lot.</h2></div><button id="resetInputs" class="text-button">Reset inputs ↺</button></div><div id="controls"></div><div id="inputError" role="alert"></div><div class="experiment-note" id="experimentNote"></div></section>
+    <section class="insight panel"><span class="eyebrow">THE IDEA TO TAKE WITH YOU</span><h2 id="takeawayTitle"></h2><p id="takeawayText"></p><button id="challenge" class="challenge-button"></button><p class="challenge-result" id="challengeResult" aria-live="polite"></p></section>
+  </div>
+  <details id="inspector" class="inspector"><summary><div><span class="inspector-icon">⌘</span><span><b>Under the surface</b><small>The exact numbers behind the current frame</small></span></div><span class="details-toggle">Inspect calculations <span aria-hidden="true">+</span></span></summary><div id="numerical" class="numerical"></div></details>
+  <footer><span>MULTIPATH ATELIER <span class="slash">/</span> LEARN BY FOLLOWING THE EVIDENCE<br><button id="basicsFooter" class="text-button">Signal basics</button> · <button id="aboutFooter" class="text-button">Sources & assumptions</button></span><span>Space to play · ← → to step · R to restart</span></footer>
+</main>
+<dialog id="modal"><div class="dialog-top"><span class="eyebrow">FIELD NOTES</span><button id="closeModal" class="icon-button" aria-label="Close dialog">×</button></div><div id="modalContent"></div></dialog>
+<div id="toast" class="toast" role="status"></div>
+<noscript>This interactive laboratory needs JavaScript enabled. All calculations run locally in your browser.</noscript>
+<script>const LAB_DATA = /*__DATA__*/;</script>
+<script>/*__ENGINE__*/</script>
+<script>/*__APP__*/</script>
+</body>
+</html>
